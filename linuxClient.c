@@ -53,7 +53,7 @@ int main(int argc, char *argv[])
 	}
 
 
-	char buff[2048];
+	char buff[8192];
 	char command[2048];
 
     int sock;
@@ -119,7 +119,7 @@ int main(int argc, char *argv[])
 
 			//write(sock, command, strlen(command));	//for testing writing command back to handler
 
-			//command[strlen(command) -1] = 0;	//take care of the newline
+			command[strlen(command) -1] = 0;	//take care of the newline
 
 			if(!strcmp("exit", command))
 				check = 0;	//exit on this
