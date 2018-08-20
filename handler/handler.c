@@ -105,18 +105,23 @@ int main(int argc, char *argv[])
 		printf("COMMAND> ");
 		fgets(command, sizeof(command), stdin);
 
-		//command[strlen(command) -1] = '\0';
+		if(command[0] == '\n')	//if they just press enter
+			continue;
+
+		command[strlen(command) -1] = '\0'; //dump the newline off of the command
 
 		write(sock, command, strlen(command));
 
+		//FOR COMMAND DEBUGGING
 		//for command specific debugging printing back command
-		read(sock, buff, sizeof(buff));
-		puts(buff);
-
+		//read(sock, buff, sizeof(buff));
+		//puts(buff);
 
 		read(sock, buff, sizeof(buff));
 		puts(buff);
 
 	}
+
+
 	return 0;
 }

