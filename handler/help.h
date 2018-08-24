@@ -2,4 +2,4 @@
 #include <stdlib.h>
 #include <string.h>
 
-void help();
+void help(void);

