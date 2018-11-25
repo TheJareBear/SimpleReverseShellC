@@ -1,0 +1,13 @@
+------------- Help Menu ------------------
+
+to make a new listener: listener <port>
+to print listeners: listeners
+
+to print sessions: sessions
+to interact with a session: session <session number>
+
+to print help menu: help
+
+to quit: exit
+
+------------------------------------------
