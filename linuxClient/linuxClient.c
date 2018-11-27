@@ -205,7 +205,7 @@ int main(int argc, char *argv[])
 		}
 
 
-		strcpy(buff, "\nALRIGHT SEE YOU LATER!\n");	//on exit print a nice message
+		strcpy(buff, "\nPayload connection closing\n");	//on exit print a nice message
 		write(sock, buff, strlen(buff));			//write that message to the socket
 	}
 
