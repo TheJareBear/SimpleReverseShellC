@@ -156,7 +156,7 @@ int main(int argc, char *argv[])
 			}
 
 			else if(!strcmp("help", command))
-				for(i = 0; i < 18; i++)
+				for(i = 0; i < 20; i++)
 					write(sock, help[i], strlen(help[i]));	//write help menu
 
 			else if(!strcmp("download", command))
@@ -185,12 +185,14 @@ int main(int argc, char *argv[])
 
 				if(file)
 					fclose(file);
+
+				free(fileName);
 			}
 
 			else if(!strcmp("upload", command))
 			{
 				int fileLen;
-				strcpy(buff, "g\0"); //write go ahead so 
+				strcpy(buff, "g\0"); //write go ahead so handler knows that file contents can come
 				write(sock, buff, strlen(buff));
 
 				char* fileName = malloc(128); //setting up the filename
@@ -214,6 +216,7 @@ int main(int argc, char *argv[])
 					fwrite(buff, 1, fileLen, file);
 
 				
+				free(fileName);
 				fclose(file);
 			}
 

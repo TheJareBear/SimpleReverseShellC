@@ -37,7 +37,7 @@ class sessionClass:
 	remote_user = "UNKNOWN" #whoami is run instantly so the user can recognize perms
 	shell_count = 0 #for id'ing
 	sessionIdCount = 0	#this will hold next available 
-	session_type = "UNKNOWN"
+	session_type = "UNKNOWN" #hold the session type (windows/linux)
 
 
 def main():
@@ -70,19 +70,23 @@ def main():
 
 		#if the user wants to display the current listeners
 		elif commands[0] == "listeners":
-			#this code will be implemented at a later time when listeners are multithreaded
-			print("Listeners:\n")
-			for lis in listeners:
-				print("Listener ID: " + str(lis.listener_id) + "   Listening Port: " + str(lis.listening_port))
-			print("")
+			if not listeners:
+				print("\nNo current listeners\n")
+			else:
+				print("Listeners:\n")
+				for lis in listeners:
+					print("Listener ID: " + str(lis.listener_id) + "   Listening Port: " + str(lis.listening_port))
+				print("")
 
 		#if the user wants to display the current sessions
 		elif commands[0] == "sessions":
-			#this code will be implemented at a later time when sessions are multithreaded
-			print("Sessions:\n")
-			for sesh in sessions:
-				print("Session ID: " + str(sesh.session_id) + "  Remote IP: " + str(sesh.remote_ip) + "   Remote User: " + sesh.remote_user[:-1] + "   Session Type: " + sesh.session_type)
-			print("")
+			if not sessions:
+				print("\nNo current sessions\n")
+			else:
+				print("Sessions:\n")
+				for sesh in sessions:
+					print("Session ID: " + str(sesh.session_id) + "  Remote IP: " + str(sesh.remote_ip) + "   Remote User: " + sesh.remote_user[:-1] + "   Session Type: " + sesh.session_type)
+				print("")
 
 		#if the user wants to interact with a given session by session id
 		elif commands[0] == "session" or commands[0] == "interact":
