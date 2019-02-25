@@ -133,7 +133,7 @@ def main():
 
 		#on clear command
 		elif commands[0] == "clear":
-			os.system('clear')
+			clear()
 
 		#on exit we have to be sure to close all existing connections
 		elif commands[0] == "exit":
@@ -148,6 +148,13 @@ def main():
 
 
 #Defined helping functions:
+
+def clear():
+	if os.name == "posix":
+		os.system('clear')
+	else:
+		os.system('cls')
+
 
 
 def getCommand():
@@ -296,6 +303,9 @@ def listener(port):
 		conn, addr = s.accept()
 
 		listeners.remove(newlist)
+		s.shutdown(socket.SHUT_RDWR)
+		s.close()
+
 		print('New session opened:')
 		print('Connected by ' + addr[0] + ':' + str(addr[1]))
 		#initial connection stuff
