@@ -273,10 +273,10 @@ int main(int argc, char *argv[])
 
 		//free up heap memory
 		free(num);
-		free(newName);
-		free(line);
-		free(error);
-		free(nl);
+		//free(newName);
+		//free(line);
+		//free(error);
+		//free(nl);
 	}
 
 	//exit
