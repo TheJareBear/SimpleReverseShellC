@@ -23,5 +23,6 @@ to upload a file: upload <filename>
 to download a file: download <filename>
 local directory listing: lls
 local cat file: lcat <filename>
+to print session information: info
 
 ------------------------------------------

@@ -1,6 +1,6 @@
-#This is a python version of the handler
-
 #!/usr/bin/env python3
+
+#This is a python version of the SchruteFarms handler
 
 import socket
 import os
@@ -220,6 +220,11 @@ def interact(sid):
 				print("Usage: cat <filename>")
 			continue
 
+
+		#printing session information while in sessions
+		elif command == "info":
+			print("Session ID: " + str(curr.session_id) + "  Remote IP: " + str(curr.remote_ip) + "   Remote User: " + curr.remote_user[:-1] + "   Session Type: " + curr.session_type)
+			continue
 
 		#for handling shell cases
 		elif command == "shell" or command == "shell2" or command == "ushell" or command == "zshell":
